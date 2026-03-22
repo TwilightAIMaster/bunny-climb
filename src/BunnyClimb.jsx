@@ -509,6 +509,8 @@ function makePlatform(y, difficulty) {
     crumbling: false,
     fallen: false,
     fallVy: 0,
+    springAnim: 0, // 0 = idle, >0 = animating (counts down)
+    springPhase: "idle", // idle, compress, extend
   };
 }
 
@@ -548,10 +550,12 @@ export default function BunnyClimb() {
 
   const initGame = useCallback(() => {
     const platforms = [];
-    // starting platform right under bunny
-    platforms.push({ x: W / 2 - 32, y: H - 80, type: "normal", color: "#66bb6a", emoji: "🪨", w: 64, hasSpike: false, isMoving: false, moveDir: 1, moveSpeed: 0, id: 0.1 });
+    // Ground — full-width platform at the bottom
+    platforms.push({ x: 0, y: H - 40, type: "ground", color: "#5d4037", w: W, hasSpike: false, hasSpring: false, isMoving: false, moveDir: 1, moveSpeed: 0, id: 0.01, crumbleTimer: 0, crumbling: false, fallen: false, fallVy: 0 });
+    // Starting platform just above ground
+    platforms.push({ x: W / 2 - 32, y: H - 110, type: "normal", color: "#66bb6a", w: 64, hasSpike: false, hasSpring: false, isMoving: false, moveDir: 1, moveSpeed: 0, id: 0.1, crumbleTimer: 0, crumbling: false, fallen: false, fallVy: 0 });
     for (let i = 1; i < 18; i++) {
-      platforms.push(makePlatform(H - 80 - i * 70, 0));
+      platforms.push(makePlatform(H - 110 - i * 70, 0));
     }
     const carrots = [];
     platforms.forEach((p, i) => {
@@ -561,7 +565,7 @@ export default function BunnyClimb() {
     });
 
     gameRef.current = {
-      bunny: { x: W / 2 - BUNNY_W / 2, y: H - 80 - BUNNY_H, vy: BOUNCE_VY, facing: 1 },
+      bunny: { x: W / 2 - BUNNY_W / 2, y: H - 40 - BUNNY_H, vy: 0, facing: 1 },
       camera: 0, // how far up we've scrolled
       platforms,
       carrots,
@@ -625,10 +629,10 @@ export default function BunnyClimb() {
     ctx.font = "bold 48px 'Nunito', sans-serif";
     ctx.fillStyle = "#fff";
     ctx.fillText(`${score}m`, W / 2, cardY + 95);
-    // Costume
+    // Level
     ctx.font = "bold 14px 'Nunito', sans-serif";
-    ctx.fillStyle = "#8b949e";
-    ctx.fillText(getCostume(costumeIdx).name, W / 2, cardY + 120);
+    ctx.fillStyle = "#ce93d8";
+    ctx.fillText(`Level ${costumeIdx + 1}`, W / 2, cardY + 120);
     // Challenge text
     ctx.font = "bold 16px 'Nunito', sans-serif";
     ctx.fillStyle = "#ffd54f";
@@ -780,6 +784,11 @@ export default function BunnyClimb() {
           p.fallVy += 0.4;
           p.y += p.fallVy;
         }
+        // Spring animation tick
+        if (p.springAnim > 0) {
+          p.springAnim--;
+          if (p.springAnim <= 0) p.springPhase = "idle";
+        }
       }
 
       // ── Platform collision (only when falling) ──
@@ -813,7 +822,17 @@ export default function BunnyClimb() {
 
             // Spring — super bounce!
             if (p.hasSpring) {
-              b.vy = SPRING_BOUNCE;
+              p.springPhase = "compress";
+              p.springAnim = 12;
+              // Delay the actual bounce slightly for the compress animation
+              setTimeout(() => {
+                const g2 = gameRef.current;
+                if (g2 && g2.alive) {
+                  g2.bunny.vy = SPRING_BOUNCE;
+                  p.springPhase = "extend";
+                  p.springAnim = 15;
+                }
+              }, 80);
               SFX.spring();
               // Spring particles
               for (let i = 0; i < 6; i++) {
@@ -880,7 +899,7 @@ export default function BunnyClimb() {
             const sc = Math.floor(g.maxHeight / 10);
             setFinalScore(sc);
             setHighScore((h) => Math.max(h, sc));
-            const img = captureScreenshot(sc, Math.floor(g.maxHeight / 1500));
+            const img = captureScreenshot(sc, Math.floor(g.maxHeight / 2000));
             setScreenshot(img);
             setScreen("over");
             return;
@@ -965,7 +984,7 @@ export default function BunnyClimb() {
       g.difficulty = Math.floor(g.maxHeight / 800);
 
       // Costume upgrades
-      const newCostume = Math.floor(g.maxHeight / 1500);
+      const newCostume = Math.floor(g.maxHeight / 2000);
       if (newCostume !== costume) setCostume(newCostume);
 
       // ── Generate new platforms above ──
@@ -989,7 +1008,7 @@ export default function BunnyClimb() {
         const sc = Math.floor(g.maxHeight / 10);
         setFinalScore(sc);
         setHighScore((h) => Math.max(h, sc));
-        const img = captureScreenshot(sc, Math.floor(g.maxHeight / 1500));
+        const img = captureScreenshot(sc, Math.floor(g.maxHeight / 2000));
         setScreenshot(img);
         setScreen("over");
         return;
@@ -1041,6 +1060,25 @@ export default function BunnyClimb() {
         ctx.fillText("☁️", cx, cy);
       }
       ctx.globalAlpha = 1;
+
+      // ── Ground ──
+      const groundScreenY = (H - 40) - g.camera;
+      if (groundScreenY < H + 20) {
+        // Dirt
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(0, groundScreenY, W, H - groundScreenY + 50);
+        // Grass top
+        ctx.fillStyle = "#66bb6a";
+        ctx.fillRect(0, groundScreenY - 4, W, 8);
+        // Grass detail
+        ctx.fillStyle = "#81c784";
+        for (let i = 0; i < 20; i++) {
+          ctx.fillRect(i * 20 + 3, groundScreenY - 6, 4, 6);
+        }
+        // Dark line
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(0, groundScreenY + 4, W, 2);
+      }
 
       // ── Platforms ──
       for (const p of g.platforms) {
@@ -1130,29 +1168,78 @@ export default function BunnyClimb() {
         // Spring!
         if (p.hasSpring) {
           const sx = p.x + p.w / 2;
-          const springH = 12;
-          // Coil
-          ctx.strokeStyle = "#76ff03";
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          for (let i = 0; i < 4; i++) {
-            const t = i / 3;
-            const yy = py - springH * t;
-            const xOff = (i % 2 === 0 ? -4 : 4);
-            if (i === 0) ctx.moveTo(sx + xOff, yy);
-            else ctx.lineTo(sx + xOff, yy);
+          
+          // Calculate spring height based on animation phase
+          let springH = 16;
+          let coilSpread = 6;
+          let topPadY = py - springH - 5;
+          
+          if (p.springPhase === "compress") {
+            // Squish down — spring compresses
+            const t = p.springAnim / 12;
+            springH = 6 + t * 10;
+            coilSpread = 3 + t * 3;
+            topPadY = py - springH - 2;
+          } else if (p.springPhase === "extend") {
+            // Launch up — spring extends past rest position
+            const t = p.springAnim / 15;
+            springH = 26 - t * 10;
+            coilSpread = 8 - t * 2;
+            topPadY = py - springH - 5;
           }
+          
+          // Black base block
+          ctx.fillStyle = "#212121";
+          ctx.beginPath();
+          ctx.roundRect(sx - 8, py - 3, 16, 6, 2);
+          ctx.fill();
+          
+          // Coil — animated zigzag
+          ctx.strokeStyle = "#bdbdbd";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(sx, py - 3);
+          for (let i = 1; i <= 5; i++) {
+            const ct = i / 5;
+            const yy = py - 3 - springH * ct;
+            const xOff = (i % 2 === 0 ? -coilSpread : coilSpread);
+            ctx.lineTo(sx + xOff, yy);
+          }
+          ctx.lineTo(sx, topPadY + 7);
           ctx.stroke();
-          // Top pad
-          ctx.fillStyle = "#64dd17";
+          
+          // Darker coil outline
+          ctx.strokeStyle = "#616161";
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(sx - 8, py - springH - 3, 16, 5, 2);
-          ctx.fill();
-          // Shine
-          ctx.fillStyle = "rgba(255,255,255,0.4)";
+          ctx.moveTo(sx, py - 3);
+          for (let i = 1; i <= 5; i++) {
+            const ct = i / 5;
+            const yy = py - 3 - springH * ct;
+            const xOff = (i % 2 === 0 ? -coilSpread : coilSpread);
+            ctx.lineTo(sx + xOff, yy);
+          }
+          ctx.lineTo(sx, topPadY + 7);
+          ctx.stroke();
+          
+          // Brown top pad
+          ctx.fillStyle = "#795548";
           ctx.beginPath();
-          ctx.roundRect(sx - 5, py - springH - 2, 10, 2, 1);
+          ctx.roundRect(sx - 10, topPadY, 20, 7, 3);
           ctx.fill();
+          // Top pad highlight
+          ctx.fillStyle = "#a1887f";
+          ctx.beginPath();
+          ctx.roundRect(sx - 7, topPadY + 1, 14, 3, 2);
+          ctx.fill();
+          
+          // Flash effect on extend
+          if (p.springPhase === "extend" && p.springAnim > 10) {
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath();
+            ctx.arc(sx, topPadY, 12, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
 
         // Moving indicator
@@ -1183,16 +1270,16 @@ export default function BunnyClimb() {
           // Draw a golden circle behind it
           ctx.fillStyle = `rgba(255,143,0,${0.2 * pulse})`;
           ctx.beginPath();
-          ctx.arc(c.x + 9, cy + 8, 14, 0, Math.PI * 2);
+          ctx.arc(c.x + 9, cy + 8, 16, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = "#000";
           ctx.font = "20px serif";
           ctx.fillText("🥕", c.x - 1, cy + 17);
-          // Small shield icon above
+          // Big shield icon above the carrot
           ctx.shadowBlur = 0;
           ctx.shadowColor = "transparent";
-          ctx.font = "10px serif";
-          ctx.fillText("🛡️", c.x + 4, cy - 2);
+          ctx.font = "22px serif";
+          ctx.fillText("🛡️", c.x - 2, cy - 6);
         } else if (c.type === "gold") {
           ctx.shadowColor = "#ffd54f";
           ctx.shadowBlur = 10;
@@ -1300,16 +1387,18 @@ export default function BunnyClimb() {
       ctx.fillStyle = "#ffd54f";
       ctx.fillText(`🥕 ${g.score}`, 22, 34);
 
-      // Costume name — top right
+      // Level — top right
+      const levelNum = costume + 1;
+      const levelText = `Level ${levelNum}`;
+      ctx.font = "bold 16px 'Nunito', sans-serif";
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
-      const cNameW = ctx.measureText(cData.name).width + 20;
-      ctx.roundRect(W - 10 - cNameW, 10, cNameW, 36, 16);
+      const lvW = ctx.measureText(levelText).width + 24;
+      ctx.roundRect(W - 10 - lvW, 10, lvW, 36, 16);
       ctx.fill();
-      ctx.font = "bold 13px 'Nunito', sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.fillStyle = "#ce93d8";
       ctx.textAlign = "right";
-      ctx.fillText(cData.name, W - 20, 33);
+      ctx.fillText(levelText, W - 20, 34);
       ctx.textAlign = "left";
 
       // Power bar centered under score
@@ -1344,38 +1433,46 @@ export default function BunnyClimb() {
 
       // ── Ability buttons at bottom ──
       const canAfford = g.score >= 200;
-      const btnY = H - 56;
-      const btnH = 44;
-      const btnW = 100;
-      const btnGap = 16;
+      const btnY = H - 58;
+      const btnH = 46;
+      const btnW = 105;
+      const btnGap = 14;
       const totalBtnsW = btnW * 2 + btnGap;
       const btn1X = W / 2 - totalBtnsW / 2;
       const btn2X = btn1X + btnW + btnGap;
 
       // Carrot progress
-      ctx.font = "bold 10px 'Nunito', sans-serif";
+      ctx.font = "bold 12px 'Nunito', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillStyle = canAfford ? "#ffd54f" : "rgba(255,255,255,0.25)";
-      ctx.fillText(`🥕 ${g.score} / 200`, W / 2, btnY - 4);
+      ctx.fillStyle = canAfford ? "#ffd54f" : "rgba(255,255,255,0.35)";
+      ctx.fillText(`🥕 ${g.score} / 200`, W / 2, btnY - 6);
 
       // Shield button
-      ctx.globalAlpha = canAfford ? 1 : 0.25;
-      ctx.font = "26px serif";
+      ctx.fillStyle = canAfford ? "#ff8f00" : "rgba(80,80,80,0.5)";
+      ctx.beginPath();
+      ctx.roundRect(btn1X, btnY, btnW, btnH, 14);
+      ctx.fill();
+      ctx.font = "22px serif";
+      ctx.globalAlpha = canAfford ? 1 : 0.4;
       ctx.fillStyle = "#fff";
-      ctx.fillText("🛡️", btn1X + btnW / 2, btnY + 24);
-      ctx.font = "bold 10px 'Nunito', sans-serif";
-      ctx.fillStyle = canAfford ? "#ffa726" : "rgba(255,255,255,0.5)";
-      ctx.fillText("SHIELD", btn1X + btnW / 2, btnY + 40);
+      ctx.fillText("🛡️", btn1X + 22, btnY + 28);
+      ctx.font = "bold 13px 'Nunito', sans-serif";
+      ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
+      ctx.fillText("SHIELD", btn1X + btnW / 2 + 10, btnY + 30);
       ctx.globalAlpha = 1;
 
       // Platform button
-      ctx.globalAlpha = canAfford ? 1 : 0.25;
-      ctx.font = "26px serif";
+      ctx.fillStyle = canAfford ? "#43a047" : "rgba(80,80,80,0.5)";
+      ctx.beginPath();
+      ctx.roundRect(btn2X, btnY, btnW, btnH, 14);
+      ctx.fill();
+      ctx.font = "22px serif";
+      ctx.globalAlpha = canAfford ? 1 : 0.4;
       ctx.fillStyle = "#fff";
-      ctx.fillText("🪨", btn2X + btnW / 2, btnY + 24);
-      ctx.font = "bold 10px 'Nunito', sans-serif";
-      ctx.fillStyle = canAfford ? "#66bb6a" : "rgba(255,255,255,0.5)";
-      ctx.fillText("PLATFORM", btn2X + btnW / 2, btnY + 40);
+      ctx.fillText("🪨", btn2X + 18, btnY + 28);
+      ctx.font = "bold 12px 'Nunito', sans-serif";
+      ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
+      ctx.fillText("PLATFORM", btn2X + btnW / 2 + 8, btnY + 30);
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
 
@@ -1613,19 +1710,36 @@ export default function BunnyClimb() {
             </div>
           )}
 
-          {/* Download button below the card */}
+          {/* Save to Photos button below the card */}
           {screenshot && (
             <button
-              onClick={() => {
-                try {
-                  const link = document.createElement("a");
-                  link.href = screenshot;
-                  link.download = `bunny-climb-${finalScore}m.png`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                } catch (e) {
+              onClick={async () => {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                  // On mobile — try share with image (save to photos option appears)
+                  try {
+                    const res = await fetch(screenshot);
+                    const blob = await res.blob();
+                    const file = new File([blob], `bunny-climb-${finalScore}m.png`, { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({ files: [file], title: "Bunny Climb" });
+                      return;
+                    }
+                  } catch (e) {}
+                  // Fallback — open image in new tab so they can long-press to save
                   window.open(screenshot, "_blank");
+                } else {
+                  // Desktop — normal download
+                  try {
+                    const link = document.createElement("a");
+                    link.href = screenshot;
+                    link.download = `bunny-climb-${finalScore}m.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } catch (e) {
+                    window.open(screenshot, "_blank");
+                  }
                 }
               }}
               style={{
@@ -1635,7 +1749,7 @@ export default function BunnyClimb() {
                 marginTop: 12, letterSpacing: 0.5,
               }}
             >
-              ⬇️ Download Screenshot
+              📸 Save to Photos
             </button>
           )}
         </div>
