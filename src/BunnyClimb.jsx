@@ -583,6 +583,8 @@ export default function BunnyClimb() {
       combo: 0,
       frameCount: 0,
       abilityCooldown: 0, // prevents accidental double-tap
+      lastSpikeY: -9999, // track last spike platform Y for spacing
+      lastSpringY: -9999, // track last spring platform Y for spacing
     };
   }, []);
 
@@ -992,6 +994,19 @@ export default function BunnyClimb() {
         const gap = randInt(55, 85 + Math.min(g.difficulty * 3, 30));
         const newY = g.highestPlatY - gap;
         const plat = makePlatform(newY, g.difficulty);
+        
+        // Enforce spike spacing — at least 250px apart
+        if (plat.hasSpike && Math.abs(newY - g.lastSpikeY) < 250) {
+          plat.hasSpike = false;
+        }
+        if (plat.hasSpike) g.lastSpikeY = newY;
+        
+        // Enforce spring spacing — at least 350px apart
+        if (plat.hasSpring && Math.abs(newY - g.lastSpringY) < 350) {
+          plat.hasSpring = false;
+        }
+        if (plat.hasSpring) g.lastSpringY = newY;
+        
         g.platforms.push(plat);
         if (Math.random() < 0.35) g.carrots.push(makeCarrot(plat));
         g.highestPlatY = newY;
