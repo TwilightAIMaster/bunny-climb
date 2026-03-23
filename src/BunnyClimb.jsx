@@ -546,6 +546,7 @@ export default function BunnyClimb() {
   const [highScore, setHighScore] = useState(0);
   const [costume, setCostume] = useState(0);
   const [screenshot, setScreenshot] = useState(null);
+  const [paused, setPaused] = useState(false);
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
 
   const initGame = useCallback(() => {
@@ -595,6 +596,7 @@ export default function BunnyClimb() {
     setFinalScore(0);
     setCostume(0);
     setScreenshot(null);
+    setPaused(false);
   }, [initGame]);
 
   // Capture game over screenshot with overlay
@@ -750,6 +752,12 @@ export default function BunnyClimb() {
     const loop = () => {
       const g = gameRef.current;
       if (!g || !g.alive) return;
+      
+      // When paused, just keep the RAF going but skip updates
+      if (g.paused) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
       const b = g.bunny;
 
       // ── Input ──
@@ -1456,24 +1464,19 @@ export default function BunnyClimb() {
       const btn1X = W / 2 - totalBtnsW / 2;
       const btn2X = btn1X + btnW + btnGap;
 
-      // Carrot progress
-      ctx.font = "bold 12px 'Nunito', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillStyle = canAfford ? "#ffd54f" : "rgba(255,255,255,0.35)";
-      ctx.fillText(`🥕 ${g.score} / 200`, W / 2, btnY - 6);
-
       // Shield button
       ctx.fillStyle = canAfford ? "#ff8f00" : "rgba(80,80,80,0.5)";
       ctx.beginPath();
       ctx.roundRect(btn1X, btnY, btnW, btnH, 14);
       ctx.fill();
-      ctx.font = "22px serif";
+      ctx.textAlign = "center";
       ctx.globalAlpha = canAfford ? 1 : 0.4;
+      ctx.font = "22px serif";
       ctx.fillStyle = "#fff";
-      ctx.fillText("🛡️", btn1X + 22, btnY + 28);
-      ctx.font = "bold 13px 'Nunito', sans-serif";
+      ctx.fillText("🛡️", btn1X + btnW / 2, btnY + 22);
+      ctx.font = "bold 11px 'Nunito', sans-serif";
       ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
-      ctx.fillText("SHIELD", btn1X + btnW / 2 + 10, btnY + 30);
+      ctx.fillText("SHIELD", btn1X + btnW / 2, btnY + 38);
       ctx.globalAlpha = 1;
 
       // Platform button
@@ -1481,13 +1484,13 @@ export default function BunnyClimb() {
       ctx.beginPath();
       ctx.roundRect(btn2X, btnY, btnW, btnH, 14);
       ctx.fill();
-      ctx.font = "22px serif";
       ctx.globalAlpha = canAfford ? 1 : 0.4;
+      ctx.font = "22px serif";
       ctx.fillStyle = "#fff";
-      ctx.fillText("🪨", btn2X + 18, btnY + 28);
-      ctx.font = "bold 12px 'Nunito', sans-serif";
+      ctx.fillText("🪨", btn2X + btnW / 2, btnY + 22);
+      ctx.font = "bold 11px 'Nunito', sans-serif";
       ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
-      ctx.fillText("PLATFORM", btn2X + btnW / 2 + 8, btnY + 30);
+      ctx.fillText("PLATFORM", btn2X + btnW / 2, btnY + 38);
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
 
@@ -1527,23 +1530,131 @@ export default function BunnyClimb() {
       <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
 
       {screen === "play" && (
-        <canvas
-          ref={canvasRef}
-          width={W}
-          height={H}
-          onMouseDown={handlePointerDown}
-          onMouseUp={handlePointerUp}
-          onMouseLeave={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchEnd={handlePointerUp}
-          style={{
-            borderRadius: 18,
-            boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
-            cursor: "pointer",
-            maxWidth: "100%",
-            touchAction: "none",
-          }}
-        />
+        <div style={{ position: "relative", maxWidth: "100%" }}>
+          <canvas
+            ref={canvasRef}
+            width={W}
+            height={H}
+            onMouseDown={handlePointerDown}
+            onMouseUp={handlePointerUp}
+            onMouseLeave={handlePointerUp}
+            onTouchStart={handlePointerDown}
+            onTouchEnd={handlePointerUp}
+            style={{
+              borderRadius: 18,
+              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+              cursor: "pointer",
+              maxWidth: "100%",
+              touchAction: "none",
+              display: "block",
+            }}
+          />
+
+          {/* X button — bottom right corner */}
+          {!paused && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const g = gameRef.current;
+                if (g) g.paused = true;
+                setPaused(true);
+              }}
+              style={{
+                position: "absolute",
+                bottom: 12,
+                right: 12,
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                border: "none",
+                background: "rgba(0,0,0,0.3)",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 10,
+              }}
+            >
+              ✕
+            </button>
+          )}
+
+          {/* Pause/Exit overlay */}
+          {paused && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute",
+                top: 0, left: 0, right: 0, bottom: 0,
+                borderRadius: 18,
+                background: "rgba(0,0,0,0.7)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 16,
+                zIndex: 20,
+              }}
+            >
+              <div style={{
+                color: "#fff",
+                fontSize: 28,
+                fontFamily: "'Lilita One', sans-serif",
+                letterSpacing: 1,
+              }}>
+                PAUSED
+              </div>
+              <button
+                onClick={() => {
+                  const g = gameRef.current;
+                  if (g) g.paused = false;
+                  setPaused(false);
+                }}
+                style={{
+                  padding: "14px 48px",
+                  fontSize: 18,
+                  fontFamily: "'Lilita One', sans-serif",
+                  border: "none",
+                  borderRadius: 50,
+                  cursor: "pointer",
+                  background: "linear-gradient(135deg, #66bb6a, #43a047)",
+                  color: "#fff",
+                  boxShadow: "0 4px 16px rgba(102,187,106,0.4)",
+                  letterSpacing: 1,
+                }}
+              >
+                CONTINUE
+              </button>
+              <button
+                onClick={() => {
+                  const g = gameRef.current;
+                  if (g) {
+                    g.alive = false;
+                    g.paused = false;
+                  }
+                  setPaused(false);
+                  setScreen("menu");
+                }}
+                style={{
+                  padding: "12px 40px",
+                  fontSize: 15,
+                  fontFamily: "'Lilita One', sans-serif",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: 50,
+                  cursor: "pointer",
+                  background: "transparent",
+                  color: "rgba(255,255,255,0.6)",
+                  letterSpacing: 1,
+                }}
+              >
+                EXIT
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {screen === "menu" && (
