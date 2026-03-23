@@ -1548,7 +1548,49 @@ export default function BunnyClimb() {
 
       {screen === "menu" && (
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-          <div style={{ fontSize: 72, animation: "hop 1s ease-in-out infinite" }}>🐰</div>
+          <div style={{ animation: "hop 1s ease-in-out infinite", width: 100, height: 100 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 512 512">
+              <defs>
+                <linearGradient id="msky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#87CEEB"/>
+                  <stop offset="100%" stopColor="#E1F5FE"/>
+                </linearGradient>
+                <linearGradient id="mground" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#66BB6A"/>
+                  <stop offset="100%" stopColor="#43A047"/>
+                </linearGradient>
+              </defs>
+              <rect width="512" height="512" rx="100" fill="url(#msky)"/>
+              <ellipse cx="90" cy="100" rx="50" ry="25" fill="white" opacity="0.4"/>
+              <ellipse cx="400" cy="130" rx="55" ry="22" fill="white" opacity="0.3"/>
+              <rect x="100" y="360" width="312" height="24" rx="12" fill="url(#mground)"/>
+              <rect x="108" y="362" width="296" height="8" rx="4" fill="#81C784" opacity="0.5"/>
+              <ellipse cx="256" cy="358" rx="45" ry="10" fill="rgba(0,0,0,0.1)"/>
+              <ellipse cx="256" cy="290" rx="55" ry="62" fill="#F8BBD0"/>
+              <ellipse cx="256" cy="305" rx="35" ry="42" fill="#FCE4EC"/>
+              <circle cx="256" cy="220" r="48" fill="#F8BBD0"/>
+              <ellipse cx="228" cy="135" rx="18" ry="55" transform="rotate(-8 228 135)" fill="#F48FB1"/>
+              <ellipse cx="228" cy="138" rx="10" ry="38" transform="rotate(-8 228 138)" fill="#FCE4EC"/>
+              <ellipse cx="284" cy="130" rx="18" ry="55" transform="rotate(8 284 130)" fill="#F48FB1"/>
+              <ellipse cx="284" cy="133" rx="10" ry="38" transform="rotate(8 284 133)" fill="#FCE4EC"/>
+              <ellipse cx="272" cy="210" rx="18" ry="20" fill="white"/>
+              <ellipse cx="240" cy="212" rx="14" ry="16" fill="white"/>
+              <circle cx="276" cy="212" r="10" fill="#333"/>
+              <circle cx="243" cy="214" r="8" fill="#333"/>
+              <circle cx="280" cy="207" r="4" fill="white"/>
+              <circle cx="246" cy="209" r="3" fill="white"/>
+              <ellipse cx="260" cy="232" rx="6" ry="4.5" fill="#F48FB1"/>
+              <ellipse cx="230" cy="350" rx="22" ry="12" transform="rotate(-10 230 350)" fill="#F48FB1"/>
+              <ellipse cx="282" cy="350" rx="22" ry="12" transform="rotate(10 282 350)" fill="#F48FB1"/>
+              <circle cx="205" cy="295" r="16" fill="white"/>
+              <g transform="translate(380, 220) rotate(15)">
+                <polygon points="0,0 -12,45 12,45" fill="#FF7043"/>
+                <line x1="-2" y1="-5" x2="-8" y2="-20" stroke="#66BB6A" strokeWidth="3" strokeLinecap="round"/>
+                <line x1="2" y1="-5" x2="8" y2="-22" stroke="#66BB6A" strokeWidth="3" strokeLinecap="round"/>
+                <line x1="0" y1="-5" x2="0" y2="-24" stroke="#81C784" strokeWidth="3" strokeLinecap="round"/>
+              </g>
+            </svg>
+          </div>
           <h1 style={{
             fontSize: 40, margin: 0, fontFamily: "'Lilita One', sans-serif",
             background: "linear-gradient(135deg, #66bb6a, #81d4fa, #ffd54f)",
@@ -1575,7 +1617,7 @@ export default function BunnyClimb() {
             color: "#ffd54f", fontSize: 11, fontWeight: 700,
             fontFamily: "'Nunito', sans-serif", lineHeight: 1.5,
           }}>
-            💡 Collect 200 🥕 to activate abilities! Use 🛡️ Shield or spawn a 🪨 Platform to save yourself. Carrots reset to zero when used.
+            💡 Collect 200 🥕 to use abilities! Tap 🛡️ Shield for spike immunity or 🪨 Platform to save yourself from falling. Each use costs 200 carrots.
           </div>
           {highScore > 0 && (
             <div style={{ color: "#ffd54f", fontSize: 16, fontWeight: 800 }}>
