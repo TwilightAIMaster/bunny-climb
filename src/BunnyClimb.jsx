@@ -359,13 +359,11 @@ function drawBunny(ctx, x, y, facing, costumeIdx, powered, frameCount) {
 
   if (c.accessory === "stars") {
     const t = (frameCount || 0) * 0.05;
-    ctx.fillStyle = "#ffd54f";
     for (let i = 0; i < 4; i++) {
       const angle = t + i * (Math.PI / 2);
       const sx = cx + Math.cos(angle) * 18;
       const sy = cy - 4 + Math.sin(angle) * 18;
-      ctx.font = "8px serif";
-      ctx.fillText("⭐", sx - 4, sy + 4);
+      drawStarIcon(ctx, sx, sy, 8, null);
     }
   }
 
@@ -476,6 +474,163 @@ function drawBunny(ctx, x, y, facing, costumeIdx, powered, frameCount) {
     ctx.globalAlpha = 1;
   }
 
+  ctx.restore();
+}
+
+// ── Custom drawn graphics (no emojis) ──
+function drawCarrotIcon(ctx, x, y, size, glow) {
+  const s = size / 20;
+  ctx.save();
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 10;
+  }
+  // Carrot body
+  ctx.fillStyle = "#FF7043";
+  ctx.beginPath();
+  ctx.moveTo(x, y - 8 * s);
+  ctx.quadraticCurveTo(x + 7 * s, y - 6 * s, x + 5 * s, y + 12 * s);
+  ctx.quadraticCurveTo(x, y + 16 * s, x - 5 * s, y + 12 * s);
+  ctx.quadraticCurveTo(x - 7 * s, y - 6 * s, x, y - 8 * s);
+  ctx.fill();
+  // Highlight stripe
+  ctx.fillStyle = "#FF8A65";
+  ctx.beginPath();
+  ctx.moveTo(x - 1 * s, y - 6 * s);
+  ctx.quadraticCurveTo(x + 3 * s, y - 4 * s, x + 2 * s, y + 8 * s);
+  ctx.quadraticCurveTo(x, y + 10 * s, x - 2 * s, y + 6 * s);
+  ctx.quadraticCurveTo(x - 3 * s, y - 4 * s, x - 1 * s, y - 6 * s);
+  ctx.fill();
+  // Dark lines
+  ctx.strokeStyle = "rgba(0,0,0,0.15)";
+  ctx.lineWidth = 1 * s;
+  ctx.beginPath();
+  ctx.moveTo(x - 2 * s, y - 2 * s);
+  ctx.lineTo(x + 2 * s, y + 1 * s);
+  ctx.moveTo(x - 2 * s, y + 3 * s);
+  ctx.lineTo(x + 2 * s, y + 5 * s);
+  ctx.stroke();
+  // Leaves
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#66BB6A";
+  ctx.beginPath();
+  ctx.ellipse(x - 3 * s, y - 11 * s, 3 * s, 7 * s, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#81C784";
+  ctx.beginPath();
+  ctx.ellipse(x + 2 * s, y - 12 * s, 2.5 * s, 6 * s, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#4CAF50";
+  ctx.beginPath();
+  ctx.ellipse(x, y - 13 * s, 2 * s, 5 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawShieldIcon(ctx, x, y, size, pulse) {
+  const s = size / 24;
+  ctx.save();
+  // Shield body
+  ctx.fillStyle = "#ffa726";
+  ctx.beginPath();
+  ctx.moveTo(x, y - 12 * s);
+  ctx.quadraticCurveTo(x + 14 * s, y - 10 * s, x + 12 * s, y + 2 * s);
+  ctx.quadraticCurveTo(x + 8 * s, y + 12 * s, x, y + 15 * s);
+  ctx.quadraticCurveTo(x - 8 * s, y + 12 * s, x - 12 * s, y + 2 * s);
+  ctx.quadraticCurveTo(x - 14 * s, y - 10 * s, x, y - 12 * s);
+  ctx.fill();
+  // Inner shield
+  ctx.fillStyle = "#ffcc80";
+  ctx.beginPath();
+  ctx.moveTo(x, y - 8 * s);
+  ctx.quadraticCurveTo(x + 9 * s, y - 6 * s, x + 8 * s, y + 1 * s);
+  ctx.quadraticCurveTo(x + 5 * s, y + 8 * s, x, y + 10 * s);
+  ctx.quadraticCurveTo(x - 5 * s, y + 8 * s, x - 8 * s, y + 1 * s);
+  ctx.quadraticCurveTo(x - 9 * s, y - 6 * s, x, y - 8 * s);
+  ctx.fill();
+  // Star emblem on shield
+  ctx.fillStyle = "#e65100";
+  ctx.beginPath();
+  const starY = y + 1 * s;
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const outerX = x + Math.cos(angle) * 4 * s;
+    const outerY = starY + Math.sin(angle) * 4 * s;
+    const innerAngle = angle + Math.PI / 5;
+    const innerX = x + Math.cos(innerAngle) * 2 * s;
+    const innerY = starY + Math.sin(innerAngle) * 2 * s;
+    if (i === 0) ctx.moveTo(outerX, outerY);
+    else ctx.lineTo(outerX, outerY);
+    ctx.lineTo(innerX, innerY);
+  }
+  ctx.fill();
+  // Outline
+  ctx.strokeStyle = "#e65100";
+  ctx.lineWidth = 1.5 * s;
+  ctx.beginPath();
+  ctx.moveTo(x, y - 12 * s);
+  ctx.quadraticCurveTo(x + 14 * s, y - 10 * s, x + 12 * s, y + 2 * s);
+  ctx.quadraticCurveTo(x + 8 * s, y + 12 * s, x, y + 15 * s);
+  ctx.quadraticCurveTo(x - 8 * s, y + 12 * s, x - 12 * s, y + 2 * s);
+  ctx.quadraticCurveTo(x - 14 * s, y - 10 * s, x, y - 12 * s);
+  ctx.stroke();
+  // Shine
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(x - 4 * s, y - 4 * s, 3 * s, 5 * s, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawStarIcon(ctx, x, y, size, glow) {
+  const s = size / 20;
+  ctx.save();
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 12;
+  }
+  // Star body
+  ctx.fillStyle = "#ffd54f";
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const outerX = x + Math.cos(angle) * 10 * s;
+    const outerY = y + Math.sin(angle) * 10 * s;
+    const innerAngle = angle + Math.PI / 5;
+    const innerX = x + Math.cos(innerAngle) * 4.5 * s;
+    const innerY = y + Math.sin(innerAngle) * 4.5 * s;
+    if (i === 0) ctx.moveTo(outerX, outerY);
+    else ctx.lineTo(outerX, outerY);
+    ctx.lineTo(innerX, innerY);
+  }
+  ctx.closePath();
+  ctx.fill();
+  // Darker outline
+  ctx.strokeStyle = "#f9a825";
+  ctx.lineWidth = 1.5 * s;
+  ctx.stroke();
+  // Inner highlight
+  ctx.fillStyle = "#ffee58";
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const outerX = x + Math.cos(angle) * 6 * s;
+    const outerY = y + Math.sin(angle) * 6 * s;
+    const innerAngle = angle + Math.PI / 5;
+    const innerX = x + Math.cos(innerAngle) * 3 * s;
+    const innerY = y + Math.sin(innerAngle) * 3 * s;
+    if (i === 0) ctx.moveTo(outerX, outerY);
+    else ctx.lineTo(outerX, outerY);
+    ctx.lineTo(innerX, innerY);
+  }
+  ctx.closePath();
+  ctx.fill();
+  // Shine dot
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.beginPath();
+  ctx.arc(x - 2 * s, y - 3 * s, 2 * s, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
@@ -1280,43 +1435,28 @@ export default function BunnyClimb() {
         if (c.collected) continue;
         const cy = c.y - g.camera;
         if (cy < -30 || cy > H + 30) continue;
-        // Reset state for each carrot
         ctx.shadowBlur = 0;
         ctx.shadowColor = "transparent";
         ctx.globalAlpha = 1;
-        ctx.fillStyle = "#000";
         if (c.type === "golden") {
-          // Golden carrot — orange/gold pulsing glow
+          // Golden carrot with shield
           const pulse = 0.6 + Math.sin(g.frameCount * 0.08) * 0.4;
-          ctx.shadowColor = "#ff8f00";
-          ctx.shadowBlur = 14 * pulse;
-          // Draw a golden circle behind it
-          ctx.fillStyle = `rgba(255,143,0,${0.2 * pulse})`;
+          ctx.fillStyle = `rgba(255,143,0,${0.15 * pulse})`;
           ctx.beginPath();
-          ctx.arc(c.x + 9, cy + 8, 16, 0, Math.PI * 2);
+          ctx.arc(c.x + 9, cy + 5, 18, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = "#000";
-          ctx.font = "20px serif";
-          ctx.fillText("🥕", c.x - 1, cy + 17);
-          // Big shield icon above the carrot
-          ctx.shadowBlur = 0;
-          ctx.shadowColor = "transparent";
-          ctx.font = "22px serif";
-          ctx.fillText("🛡️", c.x - 2, cy - 6);
+          drawCarrotIcon(ctx, c.x + 9, cy + 8, 22, "#ff8f00");
+          drawShieldIcon(ctx, c.x + 9, cy - 14, 22, pulse);
         } else if (c.type === "gold") {
-          ctx.shadowColor = "#ffd54f";
-          ctx.shadowBlur = 10;
-          ctx.font = "18px serif";
-          ctx.fillText(c.emoji, c.x, cy + 16);
+          // Star power-up
+          drawStarIcon(ctx, c.x + 9, cy + 6, 22, "#ffd54f");
         } else {
-          // Subtle backdrop so carrot is visible against light sky
-          ctx.fillStyle = "rgba(0,0,0,0.12)";
+          // Normal carrot
+          ctx.fillStyle = "rgba(0,0,0,0.08)";
           ctx.beginPath();
-          ctx.arc(c.x + 9, cy + 8, 12, 0, Math.PI * 2);
+          ctx.arc(c.x + 9, cy + 5, 12, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = "#000";
-          ctx.font = "18px serif";
-          ctx.fillText(c.emoji, c.x, cy + 16);
+          drawCarrotIcon(ctx, c.x + 9, cy + 5, 18, null);
         }
         ctx.shadowBlur = 0;
         ctx.shadowColor = "transparent";
@@ -1348,8 +1488,7 @@ export default function BunnyClimb() {
         ctx.arc(b.x + BUNNY_W / 2, b.y + BUNNY_H / 2, 20 + shieldPulse * 3, 0, Math.PI * 2);
         ctx.fill();
         // Shield icon floating above
-        ctx.font = "12px serif";
-        ctx.fillText("🛡️", b.x + BUNNY_W / 2 - 6, b.y - 10);
+        drawShieldIcon(ctx, b.x + BUNNY_W / 2, b.y - 12, 18, 1);
       }
       // Flash when invincible
       const bFlash = g.invincible > 0 && Math.floor(g.invincible / 4) % 2 === 0;
@@ -1408,7 +1547,8 @@ export default function BunnyClimb() {
       ctx.fill();
       ctx.font = "bold 16px 'Nunito', sans-serif";
       ctx.fillStyle = "#ffd54f";
-      ctx.fillText(`🥕 ${g.score}`, 22, 34);
+      drawCarrotIcon(ctx, 28, 28, 14, null);
+      ctx.fillText(` ${g.score}`, 38, 34);
 
       // Level — top right
       const levelNum = costume + 1;
@@ -1451,7 +1591,7 @@ export default function BunnyClimb() {
         ctx.fill();
         // Small shield icon
         ctx.font = "8px serif";
-        ctx.fillText("🛡️", W / 2 - 52, sy + 6);
+        drawShieldIcon(ctx, W / 2 - 50, sy + 3, 10, 1);
       }
 
       // ── Ability buttons at bottom ──
@@ -1471,11 +1611,10 @@ export default function BunnyClimb() {
       ctx.fill();
       ctx.textAlign = "center";
       ctx.globalAlpha = canAfford ? 1 : 0.4;
-      ctx.font = "22px serif";
-      ctx.fillStyle = "#fff";
-      ctx.fillText("🛡️", btn1X + btnW / 2, btnY + 22);
+      drawShieldIcon(ctx, btn1X + btnW / 2, btnY + 18, 20, 1);
       ctx.font = "bold 11px 'Nunito', sans-serif";
       ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
+      ctx.textAlign = "center";
       ctx.fillText("SHIELD", btn1X + btnW / 2, btnY + 38);
       ctx.globalAlpha = 1;
 
@@ -1485,11 +1624,18 @@ export default function BunnyClimb() {
       ctx.roundRect(btn2X, btnY, btnW, btnH, 14);
       ctx.fill();
       ctx.globalAlpha = canAfford ? 1 : 0.4;
-      ctx.font = "22px serif";
-      ctx.fillStyle = "#fff";
-      ctx.fillText("🪨", btn2X + btnW / 2, btnY + 22);
+      // Custom platform icon
+      ctx.fillStyle = "#8d6e63";
+      ctx.beginPath();
+      ctx.roundRect(btn2X + btnW / 2 - 16, btnY + 14, 32, 8, 4);
+      ctx.fill();
+      ctx.fillStyle = "#a1887f";
+      ctx.beginPath();
+      ctx.roundRect(btn2X + btnW / 2 - 13, btnY + 15, 26, 3, 2);
+      ctx.fill();
       ctx.font = "bold 11px 'Nunito', sans-serif";
       ctx.fillStyle = canAfford ? "#fff" : "rgba(255,255,255,0.5)";
+      ctx.textAlign = "center";
       ctx.fillText("PLATFORM", btn2X + btnW / 2, btnY + 38);
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
@@ -1713,14 +1859,32 @@ export default function BunnyClimb() {
             Hop from platform to platform and climb as high as you can! Tap left or right to steer. Don't fall!
           </p>
           <div style={{
-            display: "flex", gap: 12, color: "#8b949e", fontSize: 12, fontWeight: 700, flexWrap: "wrap", justifyContent: "center",
+            display: "flex", gap: 10, color: "#8b949e", fontSize: 12, fontWeight: 700, flexWrap: "wrap", justifyContent: "center", alignItems: "center",
           }}>
-            <span>🥕 +10pts</span>
-            <span>⭐ Power jump</span>
-            <span style={{ color: "#ffa726" }}>🥕🛡️ Shield</span>
-            <span style={{ color: "#76ff03" }}>🟢 Spring</span>
-            <span style={{ color: "#bcaaa4" }}>⚠️ Crumble</span>
-            <span>🔺 Danger!</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <svg width="14" height="18" viewBox="-8 -14 16 30"><path d="M0,-8 Q7,-6 5,12 Q0,16 -5,12 Q-7,-6 0,-8Z" fill="#FF7043"/><ellipse cx="-3" cy="-11" rx="3" ry="7" transform="rotate(-23)" fill="#66BB6A"/><ellipse cx="2" cy="-12" rx="2.5" ry="6" transform="rotate(17)" fill="#81C784"/></svg>
+              +10pts
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+              <svg width="16" height="16" viewBox="-12 -12 24 24"><polygon points="0,-10 2.9,-3.1 9.5,-3.1 4.1,1.9 5.9,8.1 0,4.5 -5.9,8.1 -4.1,1.9 -9.5,-3.1 -2.9,-3.1" fill="#ffd54f" stroke="#f9a825" strokeWidth="1.5"/></svg>
+              Power jump
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#ffa726" }}>
+              <svg width="16" height="20" viewBox="-14 -14 28 30"><path d="M0,-12 Q14,-10 12,2 Q8,12 0,15 Q-8,12 -12,2 Q-14,-10 0,-12Z" fill="#ffa726" stroke="#e65100" strokeWidth="1.5"/><path d="M0,-8 Q9,-6 8,1 Q5,8 0,10 Q-5,8 -8,1 Q-9,-6 0,-8Z" fill="#ffcc80"/></svg>
+              Shield
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#bdbdbd" }}>
+              <svg width="14" height="16" viewBox="0 0 14 16"><rect x="0" y="12" width="14" height="4" rx="2" fill="#212121"/><line x1="7" y1="12" x2="3" y2="6" stroke="#bdbdbd" strokeWidth="2.5"/><line x1="3" y1="6" x2="11" y2="3" stroke="#bdbdbd" strokeWidth="2.5"/><line x1="11" y1="3" x2="7" y2="0" stroke="#bdbdbd" strokeWidth="2.5"/><rect x="1" y="-2" width="12" height="4" rx="2" fill="#795548"/></svg>
+              Spring
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#bcaaa4" }}>
+              <svg width="14" height="8" viewBox="0 0 14 8"><rect x="0" y="0" width="14" height="8" rx="4" fill="#bcaaa4"/><line x1="3" y1="1" x2="5" y2="7" stroke="rgba(0,0,0,0.2)" strokeWidth="1"/><line x1="9" y1="1" x2="7" y2="7" stroke="rgba(0,0,0,0.2)" strokeWidth="1"/></svg>
+              Crumble
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#ef5350" }}>
+              <svg width="12" height="14" viewBox="0 0 16 18"><polygon points="8,0 0,16 16,16" fill="#e53935"/><polygon points="8,3 4,14 9,14" fill="#ff8a80"/></svg>
+              Danger!
+            </span>
           </div>
           <div style={{
             background: "rgba(255,213,79,0.08)", border: "1px solid rgba(255,213,79,0.15)",
@@ -1728,7 +1892,7 @@ export default function BunnyClimb() {
             color: "#ffd54f", fontSize: 11, fontWeight: 700,
             fontFamily: "'Nunito', sans-serif", lineHeight: 1.5,
           }}>
-            💡 Collect 200 🥕 to use abilities! Tap 🛡️ Shield for spike immunity or 🪨 Platform to save yourself from falling. Each use costs 200 carrots.
+            💡 Collect 200 carrots to use abilities! Tap Shield for spike immunity or Platform to save yourself from falling. Each use costs 200 carrots.
           </div>
           {highScore > 0 && (
             <div style={{ color: "#ffd54f", fontSize: 16, fontWeight: 800 }}>
@@ -1920,6 +2084,20 @@ export default function BunnyClimb() {
               📸 Save to Photos
             </button>
           )}
+
+          {/* Exit button */}
+          <button
+            onClick={() => setScreen("menu")}
+            style={{
+              padding: "8px 24px", fontSize: 13, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 50, cursor: "pointer",
+              background: "transparent", color: "rgba(255,255,255,0.4)",
+              marginTop: 6, letterSpacing: 0.5,
+            }}
+          >
+            ✕ Exit
+          </button>
         </div>
       )}
 

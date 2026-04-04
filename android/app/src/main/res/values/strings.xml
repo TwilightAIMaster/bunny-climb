@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bunny Climb</string>
+    <string name="title_activity_main">Bunny Climb</string>
+    <string name="package_name">com.bunnyclimb.game</string>
+    <string name="custom_url_scheme">com.bunnyclimb.game</string>
+</resources>
