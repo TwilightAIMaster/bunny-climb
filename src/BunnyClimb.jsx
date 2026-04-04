@@ -1919,7 +1919,7 @@ export default function BunnyClimb() {
           textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 0,
           width: "100%", maxWidth: 380,
         }}>
-          {/* Large screenshot as background card */}
+          {/* Screenshot card with everything overlaid */}
           {screenshot && (
             <div style={{
               position: "relative",
@@ -1939,165 +1939,100 @@ export default function BunnyClimb() {
                 }}
               />
 
-              {/* Overlay content on the image */}
+              {/* NEW RECORD overlaid just above Bunny Climb title */}
+              {finalScore >= highScore && finalScore > 0 && (
+                <div style={{
+                  position: "absolute",
+                  top: "28%",
+                  left: 0, right: 0,
+                  color: "#ffd54f", fontSize: 22, fontWeight: 800,
+                  fontFamily: "'Lilita One', sans-serif",
+                  animation: "hop 0.5s ease",
+                  WebkitTextStroke: "1.5px rgba(0,0,0,0.7)",
+                  textShadow: "2px 2px 0 rgba(0,0,0,0.6), -1px -1px 0 rgba(0,0,0,0.6), 1px -1px 0 rgba(0,0,0,0.6), -1px 1px 0 rgba(0,0,0,0.6), 0 3px 12px rgba(255,213,79,0.5)",
+                  letterSpacing: 2,
+                  textAlign: "center",
+                }}>
+                  🏆 NEW RECORD!
+                </div>
+              )}
+
+              {/* Save to Photos — matching distance below score card as NEW RECORD is above */}
+              <div style={{
+                position: "absolute",
+                top: "68%",
+                left: 0, right: 0,
+                display: "flex", justifyContent: "center",
+              }}>
+                <button
+                  onClick={async () => {
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    if (isMobile) {
+                      try {
+                        const res = await fetch(screenshot);
+                        const blob = await res.blob();
+                        const file = new File([blob], `bunny-climb-${finalScore}m.png`, { type: "image/png" });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                          await navigator.share({ files: [file], title: "Bunny Climb" });
+                          return;
+                        }
+                      } catch (e) {}
+                      window.open(screenshot, "_blank");
+                    } else {
+                      try {
+                        const link = document.createElement("a");
+                        link.href = screenshot;
+                        link.download = `bunny-climb-${finalScore}m.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      } catch (e) {
+                        window.open(screenshot, "_blank");
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: "8px 28px", fontSize: 13, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+                    border: "none", borderRadius: 50, cursor: "pointer",
+                    background: "linear-gradient(135deg, #42a5f5, #1e88e5)",
+                    color: "#fff", boxShadow: "0 3px 12px rgba(66,165,245,0.3)",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  📸 Save to Photos
+                </button>
+              </div>
+
+              {/* ONE MORE HOP and EXIT at bottom */}
               <div style={{
                 position: "absolute",
                 bottom: 0, left: 0, right: 0,
-                padding: "24px 16px 18px",
-                background: "linear-gradient(transparent, rgba(0,0,0,0.9))",
+                padding: "0 16px 16px",
                 borderRadius: "0 0 20px 20px",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+                display: "flex", justifyContent: "center",
               }}>
-                {finalScore >= highScore && finalScore > 0 && (
-                  <div style={{
-                    color: "#ffd54f", fontSize: 14, fontWeight: 800,
-                    fontFamily: "'Nunito', sans-serif",
-                    animation: "hop 0.5s ease",
+                <div style={{ display: "flex", gap: 10, width: "90%", justifyContent: "center" }}>
+                  <button onClick={startGame} style={{
+                    padding: "12px 0", fontSize: 17, fontFamily: "'Lilita One', sans-serif",
+                    border: "none", borderRadius: 50, cursor: "pointer",
+                    background: "linear-gradient(135deg, #ef5350, #c62828)",
+                    color: "#fff", boxShadow: "0 4px 16px rgba(239,83,80,0.5)",
+                    letterSpacing: 1, flex: 1,
                   }}>
-                    🏆 NEW RECORD!
-                  </div>
-                )}
-
-                {/* Big ONE MORE HOP button */}
-                <button onClick={startGame} style={{
-                  padding: "16px 52px", fontSize: 22, fontFamily: "'Lilita One', sans-serif",
-                  border: "none", borderRadius: 50, cursor: "pointer",
-                  background: "linear-gradient(135deg, #ef5350, #c62828)",
-                  color: "#fff", boxShadow: "0 6px 24px rgba(239,83,80,0.5)",
-                  letterSpacing: 1, width: "85%",
-                }}>
-                  ONE MORE HOP
-                </button>
-
-                {/* Share buttons row */}
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-                  <button
-                    onClick={() => {
-                      const text = `🐰 I climbed ${finalScore}m in Bunny Climb! Can you beat my score? 🥕`;
-                      const url = window.location.href;
-                      window.open(
-                        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-                        "_blank"
-                      );
-                    }}
-                    style={{
-                      padding: "7px 14px", fontSize: 12, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-                      border: "none", borderRadius: 10, cursor: "pointer",
-                      background: "#000", color: "#fff",
-                    }}
-                  >
-                    𝕏
+                    ONE MORE HOP
                   </button>
-                  <button
-                    onClick={() => {
-                      const url = window.location.href;
-                      const quote = `🐰 I climbed ${finalScore}m in Bunny Climb! Can you beat my score? 🥕`;
-                      window.open(
-                        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`,
-                        "_blank",
-                        "width=600,height=400"
-                      );
-                    }}
-                    style={{
-                      padding: "7px 14px", fontSize: 12, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-                      border: "none", borderRadius: 10, cursor: "pointer",
-                      background: "#1877f2", color: "#fff",
-                    }}
-                  >
-                    f Facebook
+                  <button onClick={() => setScreen("menu")} style={{
+                    padding: "12px 20px", fontSize: 17, fontFamily: "'Lilita One', sans-serif",
+                    border: "1px solid rgba(255,255,255,0.25)", borderRadius: 50, cursor: "pointer",
+                    background: "rgba(0,0,0,0.3)", color: "rgba(255,255,255,0.7)",
+                    letterSpacing: 1,
+                  }}>
+                    EXIT
                   </button>
-                  <button
-                    onClick={() => {
-                      const text = `🐰 I climbed ${finalScore}m in Bunny Climb! Can you beat my score? 🥕\n${window.location.href}`;
-                      const showToast = (msg) => {
-                        const el = document.getElementById("copy-toast");
-                        if (el) { el.textContent = msg; el.style.opacity = 1; setTimeout(() => { el.style.opacity = 0; }, 2500); }
-                      };
-                      try {
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                          navigator.clipboard.writeText(text).then(() => {
-                            showToast("Copied! Paste on Instagram, Stories, or anywhere!");
-                          }).catch(() => prompt("Copy to share on Instagram:", text));
-                        } else { prompt("Copy to share on Instagram:", text); }
-                      } catch (e) { prompt("Copy to share on Instagram:", text); }
-                    }}
-                    style={{
-                      padding: "7px 14px", fontSize: 12, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-                      border: "none", borderRadius: 10, cursor: "pointer",
-                      background: "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
-                      color: "#fff",
-                    }}
-                  >
-                    📷 Instagram
-                  </button>
-                </div>
-                <div id="copy-toast" style={{
-                  color: "#66bb6a", fontSize: 11, fontWeight: 700,
-                  fontFamily: "'Nunito', sans-serif",
-                  opacity: 0, transition: "opacity 0.3s ease",
-                }}>
-                  Copied!
                 </div>
               </div>
             </div>
           )}
-
-          {/* Save to Photos button below the card */}
-          {screenshot && (
-            <button
-              onClick={async () => {
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                  // On mobile — try share with image (save to photos option appears)
-                  try {
-                    const res = await fetch(screenshot);
-                    const blob = await res.blob();
-                    const file = new File([blob], `bunny-climb-${finalScore}m.png`, { type: "image/png" });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                      await navigator.share({ files: [file], title: "Bunny Climb" });
-                      return;
-                    }
-                  } catch (e) {}
-                  // Fallback — open image in new tab so they can long-press to save
-                  window.open(screenshot, "_blank");
-                } else {
-                  // Desktop — normal download
-                  try {
-                    const link = document.createElement("a");
-                    link.href = screenshot;
-                    link.download = `bunny-climb-${finalScore}m.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  } catch (e) {
-                    window.open(screenshot, "_blank");
-                  }
-                }
-              }}
-              style={{
-                padding: "10px 28px", fontSize: 14, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-                border: "none", borderRadius: 50, cursor: "pointer",
-                background: "rgba(255,255,255,0.08)", color: "#8b949e",
-                marginTop: 12, letterSpacing: 0.5,
-              }}
-            >
-              📸 Save to Photos
-            </button>
-          )}
-
-          {/* Exit button */}
-          <button
-            onClick={() => setScreen("menu")}
-            style={{
-              padding: "8px 24px", fontSize: 13, fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 50, cursor: "pointer",
-              background: "transparent", color: "rgba(255,255,255,0.4)",
-              marginTop: 6, letterSpacing: 0.5,
-            }}
-          >
-            ✕ Exit
-          </button>
         </div>
       )}
 
