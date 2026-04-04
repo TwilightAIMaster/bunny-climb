@@ -843,8 +843,8 @@ export default function BunnyClimb() {
 
       // Shield button
       if (cx >= b1.x && cx <= b1.x + b1.w && cy >= b1.y && cy <= b1.y + b1.h) {
-        if (g.score >= 200 && !g.shielded) {
-          g.score -= 200;
+        if (g.score >= 100 && !g.shielded) {
+          g.score -= 100;
           g.shielded = true;
           g.shieldTimer = 400;
           g.abilityCooldown = 20;
@@ -863,8 +863,8 @@ export default function BunnyClimb() {
 
       // Platform button
       if (cx >= b2.x && cx <= b2.x + b2.w && cy >= b2.y && cy <= b2.y + b2.h) {
-        if (g.score >= 200) {
-          g.score -= 200;
+        if (g.score >= 100) {
+          g.score -= 100;
           g.abilityCooldown = 20;
           // Spawn a platform right below the bunny
           const platY = g.bunny.y + BUNNY_H + 40 + g.camera;
@@ -1595,7 +1595,7 @@ export default function BunnyClimb() {
       }
 
       // ── Ability buttons at bottom ──
-      const canAfford = g.score >= 200;
+      const canAfford = g.score >= 100;
       const btnY = H - 58;
       const btnH = 46;
       const btnW = 105;
@@ -1892,7 +1892,7 @@ export default function BunnyClimb() {
             color: "#ffd54f", fontSize: 11, fontWeight: 700,
             fontFamily: "'Nunito', sans-serif", lineHeight: 1.5,
           }}>
-            💡 Collect 200 carrots to use abilities! Tap Shield for spike immunity or Platform to save yourself from falling. Each use costs 200 carrots.
+            💡 Collect 100 carrots to use abilities! Tap Shield for spike immunity or Platform to save yourself from falling. Each use costs 100 carrots.
           </div>
           {highScore > 0 && (
             <div style={{ color: "#ffd54f", fontSize: 16, fontWeight: 800 }}>
@@ -2003,7 +2003,7 @@ export default function BunnyClimb() {
                 </button>
               </div>
 
-              {/* ONE MORE HOP and EXIT at bottom */}
+              {/* TRY AGAIN and EXIT at bottom */}
               <div style={{
                 position: "absolute",
                 bottom: 0, left: 0, right: 0,
@@ -2019,7 +2019,7 @@ export default function BunnyClimb() {
                     color: "#fff", boxShadow: "0 4px 16px rgba(239,83,80,0.5)",
                     letterSpacing: 1, flex: 1,
                   }}>
-                    ONE MORE HOP
+                    TRY AGAIN
                   </button>
                   <button onClick={() => setScreen("menu")} style={{
                     padding: "12px 20px", fontSize: 17, fontFamily: "'Lilita One', sans-serif",
