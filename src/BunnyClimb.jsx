@@ -669,12 +669,12 @@ function makePlatform(y, difficulty) {
   };
 }
 
-function makeCarrot(plat) {
+function makeCarrot(plat, difficulty) {
   const roll = Math.random();
   let type, emoji;
-  if (roll < 0.07) {
+  if (difficulty >= 4 && roll < 0.07) {
     type = "golden";
-    emoji = "🥕";  // golden carrot — drawn with gold glow
+    emoji = "🥕";
   } else if (roll < 0.20) {
     type = "gold";
     emoji = "⭐";
@@ -716,8 +716,8 @@ export default function BunnyClimb() {
     const carrots = [];
     platforms.forEach((p, i) => {
       // Always spawn carrots on the first 5 platforms so players see them early
-      if (i > 0 && i <= 5) carrots.push(makeCarrot(p));
-      else if (i > 5 && Math.random() < 0.4) carrots.push(makeCarrot(p));
+      if (i > 0 && i <= 5) carrots.push(makeCarrot(p, 0));
+      else if (i > 5 && Math.random() < 0.4) carrots.push(makeCarrot(p, 0));
     });
 
     gameRef.current = {
@@ -1171,7 +1171,7 @@ export default function BunnyClimb() {
         if (plat.hasSpring) g.lastSpringY = newY;
         
         g.platforms.push(plat);
-        if (Math.random() < 0.35) g.carrots.push(makeCarrot(plat));
+        if (Math.random() < 0.35) g.carrots.push(makeCarrot(plat, g.difficulty));
         g.highestPlatY = newY;
       }
 
