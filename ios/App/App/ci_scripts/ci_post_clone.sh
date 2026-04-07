@@ -20,4 +20,5 @@ find ios/App/Pods -name "Pods-App-frameworks.sh" -exec sed -i '' 's/readlink "${
 # 5. Native install
 cd ios/App
 pod install
+#
 
