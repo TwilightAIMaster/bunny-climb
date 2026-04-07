@@ -1,6 +1,15 @@
 #!/bin/sh
 set -e
 
+# 0. Copy export options plists to workspace-level ci/ directory
+#    (xcodebuild -exportArchive expects them at $CI_WORKSPACE/ci/)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../../../.." && pwd)}"
+WORKSPACE_CI="${CI_WORKSPACE:-/Volumes/workspace}/ci"
+mkdir -p "$WORKSPACE_CI"
+cp "$REPO_ROOT/ci/development-exportoptions.plist" "$WORKSPACE_CI/"
+cp "$REPO_ROOT/ci/ad-hoc-exportoptions.plist" "$WORKSPACE_CI/"
+
 # 1. Reach the root
 cd ../../../../../
 
@@ -21,4 +30,6 @@ find ios/App/Pods -name "Pods-App-frameworks.sh" -exec sed -i '' 's/readlink "${
 cd ios/App
 pod install
 #
+
+
 
