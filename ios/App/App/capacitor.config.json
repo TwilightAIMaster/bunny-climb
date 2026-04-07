@@ -1,0 +1,6 @@
+{
+	"appId": "com.bunnyclimb.game",
+	"appName": "Bunny Climb",
+	"webDir": "dist",
+	"packageClassList": []
+}
