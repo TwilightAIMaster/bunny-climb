@@ -2,7 +2,6 @@
 set -e
 
 # 0. Copy export options plists to workspace-level ci/ directory
-#    (xcodebuild -exportArchive expects them at $CI_WORKSPACE/ci/)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../../../.." && pwd)}"
 WORKSPACE_CI="${CI_WORKSPACE:-/Volumes/workspace}/ci"
@@ -25,6 +24,11 @@ npm run build
 # 4. Sync and FIX: Patch the CocoaPods bug for Xcode 16+
 npx cap sync ios
 find ios/App/Pods -name "Pods-App-frameworks.sh" -exec sed -i '' 's/readlink "${source}"/readlink -f "${source}"/g' {} +
+
+# 5. Native install
+cd ios/App
+pod install
+#
 
 # 5. Native install
 cd ios/App
