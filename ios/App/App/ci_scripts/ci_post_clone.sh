@@ -13,9 +13,11 @@ rm -rf public
 npm install
 npm run build
 
-# 4. Sync and install Native Pods
+# 4. Sync and FIX: Patch the CocoaPods bug for Xcode 16+
 npx cap sync ios
+find ios/App/Pods -name "Pods-App-frameworks.sh" -exec sed -i '' 's/readlink "${source}"/readlink -f "${source}"/g' {} +
 
-# Move into the iOS folder relative to the ROOT
+# 5. Native install
 cd ios/App
 pod install
+
