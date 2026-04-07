@@ -30,10 +30,5 @@ cd ios/App
 pod install
 #
 
-# 5. Native install
-cd ios/App
-pod install
-#
-
 
 
