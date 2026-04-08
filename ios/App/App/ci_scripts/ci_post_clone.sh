@@ -29,7 +29,23 @@ find ios/App/Pods -name "Pods-App-frameworks.sh" -exec sed -i '' 's/readlink "${
 # 5. Native install
 cd ios/App
 pod install
-#
+
+# 6. Pre-resolve Swift Package dependencies with retry to avoid Xcode Cloud download timeouts
+MAX_ATTEMPTS=5
+ATTEMPT=1
+until xcodebuild -resolvePackageDependencies \
+    -workspace App.xcworkspace \
+    -scheme App \
+    -clonedSourcePackagesDirPath "$WORKSPACE_CI/SourcePackages" 2>&1; do
+  if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+    echo "Failed to resolve package dependencies after $MAX_ATTEMPTS attempts."
+    exit 1
+  fi
+  echo "Package resolution attempt $ATTEMPT failed. Retrying in 15 seconds..."
+  ATTEMPT=$((ATTEMPT + 1))
+  sleep 15
+done
+echo "Swift Package dependencies resolved successfully."
 
 
 
