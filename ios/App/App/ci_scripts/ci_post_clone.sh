@@ -6,8 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-$(cd "$SCRIPT_DIR/../../../.." && pwd)}"
 WORKSPACE_CI="${CI_WORKSPACE:-/Volumes/workspace}/ci"
 mkdir -p "$WORKSPACE_CI"
-cp "$REPO_ROOT/ci/development-exportoptions.plist" "$WORKSPACE_CI/"
-cp "$REPO_ROOT/ci/ad-hoc-exportoptions.plist" "$WORKSPACE_CI/"
+cp "$REPO_ROOT/ci/app-store-exportoptions.plist" "$WORKSPACE_CI/"
 
 # 1. Reach the root
 cd ../../../../../
