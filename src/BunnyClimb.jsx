@@ -703,10 +703,8 @@ export default function BunnyClimb() {
   const [screenshot, setScreenshot] = useState(null);
   const [paused, setPaused] = useState(false);
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
-  // Fixed HUD offset in canvas coordinates — just below the status bar line.
-  // Canvas is 640px tall, displayed fullscreen. On iPhone 15 Pro (852px screen),
-  // status bar ≈ 54px display. In canvas coords: 54*(640/852)≈40.
-  const HUD_TOP = 40;
+  // HUD offset in canvas coordinates — just below the status bar line.
+  const HUD_TOP = 10;
 
   const initGame = useCallback(() => {
     const platforms = [];
