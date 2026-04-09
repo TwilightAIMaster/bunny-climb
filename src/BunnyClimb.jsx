@@ -703,11 +703,10 @@ export default function BunnyClimb() {
   const [screenshot, setScreenshot] = useState(null);
   const [paused, setPaused] = useState(false);
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
-  // Fixed HUD offset in canvas coordinates to clear Dynamic Island + status bar.
+  // Fixed HUD offset in canvas coordinates — just below the status bar line.
   // Canvas is 640px tall, displayed fullscreen. On iPhone 15 Pro (852px screen),
-  // Dynamic Island + status bar ≈ 59px display. In canvas coords: 59*(640/852)≈44.
-  // We use 60 to guarantee clearance on all modern iPhones.
-  const HUD_TOP = 60;
+  // status bar ≈ 54px display. In canvas coords: 54*(640/852)≈40.
+  const HUD_TOP = 40;
 
   const initGame = useCallback(() => {
     const platforms = [];
@@ -1721,8 +1720,8 @@ export default function BunnyClimb() {
               }}
               style={{
                 position: "absolute",
-                bottom: 12,
-                right: 12,
+                bottom: 80,
+                right: 16,
                 width: 32,
                 height: 32,
                 borderRadius: "50%",
