@@ -11,7 +11,7 @@ cp "$REPO_ROOT/ci/development-exportoptions.plist" "$WORKSPACE_CI/"
 cp "$REPO_ROOT/ci/ad-hoc-exportoptions.plist" "$WORKSPACE_CI/"
 
 # 1. Reach the root
-cd ../../../../../
+cd "$REPO_ROOT"
 
 # 2. Clean up
 rm -f config.xml
