@@ -703,6 +703,26 @@ export default function BunnyClimb() {
   const [screenshot, setScreenshot] = useState(null);
   const [paused, setPaused] = useState(false);
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
+  const hudTopRef = useRef(0); // safe area offset in canvas coordinates
+
+  // Compute safe-area offset for HUD so it clears the notch / Dynamic Island
+  useEffect(() => {
+    const measure = () => {
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:fixed;top:0;left:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none";
+      document.body.appendChild(probe);
+      const sat = probe.getBoundingClientRect().height;
+      document.body.removeChild(probe);
+      const canvas = canvasRef.current;
+      if (canvas && sat > 0) {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.height > 0) hudTopRef.current = sat * (H / rect.height);
+      }
+    };
+    const t = setTimeout(measure, 100);
+    window.addEventListener("resize", measure);
+    return () => { clearTimeout(t); window.removeEventListener("resize", measure); };
+  }, []);
 
   const initGame = useCallback(() => {
     const platforms = [];
@@ -1528,27 +1548,28 @@ export default function BunnyClimb() {
 
       // ── HUD ──
       const score = Math.floor(g.maxHeight / 10);
+      const ht = hudTopRef.current; // safe area offset
 
       // Height score — top center
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
-      ctx.roundRect(W / 2 - 50, 10, 100, 36, 16);
+      ctx.roundRect(W / 2 - 50, 10 + ht, 100, 36, 16);
       ctx.fill();
       ctx.fillStyle = "#fff";
       ctx.font = "bold 24px 'Nunito', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`${score}m`, W / 2, 36);
+      ctx.fillText(`${score}m`, W / 2, 36 + ht);
       ctx.textAlign = "left";
 
       // Carrot score — top left
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
-      ctx.roundRect(10, 10, 90, 36, 16);
+      ctx.roundRect(10, 10 + ht, 90, 36, 16);
       ctx.fill();
       ctx.font = "bold 16px 'Nunito', sans-serif";
       ctx.fillStyle = "#ffd54f";
-      drawCarrotIcon(ctx, 28, 28, 14, null);
-      ctx.fillText(` ${g.score}`, 38, 34);
+      drawCarrotIcon(ctx, 28, 28 + ht, 14, null);
+      ctx.fillText(` ${g.score}`, 38, 34 + ht);
 
       // Level — top right
       const levelNum = costume + 1;
@@ -1557,11 +1578,11 @@ export default function BunnyClimb() {
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
       const lvW = ctx.measureText(levelText).width + 24;
-      ctx.roundRect(W - 10 - lvW, 10, lvW, 36, 16);
+      ctx.roundRect(W - 10 - lvW, 10 + ht, lvW, 36, 16);
       ctx.fill();
       ctx.fillStyle = "#ce93d8";
       ctx.textAlign = "right";
-      ctx.fillText(levelText, W - 20, 34);
+      ctx.fillText(levelText, W - 20, 34 + ht);
       ctx.textAlign = "left";
 
       // Power bar centered under score
@@ -1569,11 +1590,11 @@ export default function BunnyClimb() {
         const bw = (g.powerTimer / 200) * 80;
         ctx.fillStyle = "rgba(255,213,79,0.25)";
         ctx.beginPath();
-        ctx.roundRect(W / 2 - 40, 52, 80, 6, 3);
+        ctx.roundRect(W / 2 - 40, 52 + ht, 80, 6, 3);
         ctx.fill();
         ctx.fillStyle = "#ffd54f";
         ctx.beginPath();
-        ctx.roundRect(W / 2 - 40, 52, bw, 6, 3);
+        ctx.roundRect(W / 2 - 40, 52 + ht, bw, 6, 3);
         ctx.fill();
       }
 
@@ -1662,7 +1683,9 @@ export default function BunnyClimb() {
   }, [screen, costume]);
 
   return (
-    <div style={{
+    <div
+      onContextMenu={(e) => e.preventDefault()}
+      style={{
       width: "100vw",
       height: "100dvh",
       background: "#0d1117",
@@ -1675,6 +1698,8 @@ export default function BunnyClimb() {
       margin: 0,
       overflow: "hidden",
       userSelect: "none",
+      WebkitUserSelect: "none",
+      WebkitTouchCallout: "none",
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
 
@@ -1689,12 +1714,15 @@ export default function BunnyClimb() {
             onMouseLeave={handlePointerUp}
             onTouchStart={handlePointerDown}
             onTouchEnd={handlePointerUp}
+            onContextMenu={(e) => e.preventDefault()}
             style={{
               width: "100vw",
               height: "100dvh",
               cursor: "pointer",
               touchAction: "none",
               display: "block",
+              WebkitUserSelect: "none",
+              WebkitTouchCallout: "none",
             }}
           />
 
