@@ -703,29 +703,11 @@ export default function BunnyClimb() {
   const [screenshot, setScreenshot] = useState(null);
   const [paused, setPaused] = useState(false);
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
-  const hudTopRef = useRef(0); // safe area offset in canvas coordinates
-
-  // Compute safe-area offset for HUD so it clears the notch / Dynamic Island
-  useEffect(() => {
-    const measure = () => {
-      const probe = document.createElement("div");
-      probe.style.cssText = "position:fixed;top:0;left:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none";
-      document.body.appendChild(probe);
-      const sat = probe.getBoundingClientRect().height;
-      document.body.removeChild(probe);
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        if (rect.height > 0) {
-          const offset = Math.max(sat, 59) * (H / rect.height);
-          hudTopRef.current = offset + 30; // generous padding below Dynamic Island
-        }
-      }
-    };
-    const t = setTimeout(measure, 100);
-    window.addEventListener("resize", measure);
-    return () => { clearTimeout(t); window.removeEventListener("resize", measure); };
-  }, []);
+  // Fixed HUD offset in canvas coordinates to clear Dynamic Island + status bar.
+  // Canvas is 640px tall, displayed fullscreen. On iPhone 15 Pro (852px screen),
+  // Dynamic Island + status bar ≈ 59px display. In canvas coords: 59*(640/852)≈44.
+  // We use 60 to guarantee clearance on all modern iPhones.
+  const HUD_TOP = 60;
 
   const initGame = useCallback(() => {
     const platforms = [];
@@ -1551,28 +1533,27 @@ export default function BunnyClimb() {
 
       // ── HUD ──
       const score = Math.floor(g.maxHeight / 10);
-      const ht = hudTopRef.current; // safe area offset
 
       // Height score — top center
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
-      ctx.roundRect(W / 2 - 50, 10 + ht, 100, 36, 16);
+      ctx.roundRect(W / 2 - 50, 10 + HUD_TOP, 100, 36, 16);
       ctx.fill();
       ctx.fillStyle = "#fff";
       ctx.font = "bold 24px 'Nunito', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`${score}m`, W / 2, 36 + ht);
+      ctx.fillText(`${score}m`, W / 2, 36 + HUD_TOP);
       ctx.textAlign = "left";
 
       // Carrot score — top left
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
-      ctx.roundRect(10, 10 + ht, 90, 36, 16);
+      ctx.roundRect(10, 10 + HUD_TOP, 90, 36, 16);
       ctx.fill();
       ctx.font = "bold 16px 'Nunito', sans-serif";
       ctx.fillStyle = "#ffd54f";
-      drawCarrotIcon(ctx, 28, 28 + ht, 14, null);
-      ctx.fillText(` ${g.score}`, 38, 34 + ht);
+      drawCarrotIcon(ctx, 28, 28 + HUD_TOP, 14, null);
+      ctx.fillText(` ${g.score}`, 38, 34 + HUD_TOP);
 
       // Level — top right
       const levelNum = costume + 1;
@@ -1581,11 +1562,11 @@ export default function BunnyClimb() {
       ctx.fillStyle = "rgba(0,0,0,0.4)";
       ctx.beginPath();
       const lvW = ctx.measureText(levelText).width + 24;
-      ctx.roundRect(W - 10 - lvW, 10 + ht, lvW, 36, 16);
+      ctx.roundRect(W - 10 - lvW, 10 + HUD_TOP, lvW, 36, 16);
       ctx.fill();
       ctx.fillStyle = "#ce93d8";
       ctx.textAlign = "right";
-      ctx.fillText(levelText, W - 20, 34 + ht);
+      ctx.fillText(levelText, W - 20, 34 + HUD_TOP);
       ctx.textAlign = "left";
 
       // Power bar centered under score
@@ -1593,11 +1574,11 @@ export default function BunnyClimb() {
         const bw = (g.powerTimer / 200) * 80;
         ctx.fillStyle = "rgba(255,213,79,0.25)";
         ctx.beginPath();
-        ctx.roundRect(W / 2 - 40, 52 + ht, 80, 6, 3);
+        ctx.roundRect(W / 2 - 40, 52 + HUD_TOP, 80, 6, 3);
         ctx.fill();
         ctx.fillStyle = "#ffd54f";
         ctx.beginPath();
-        ctx.roundRect(W / 2 - 40, 52 + ht, bw, 6, 3);
+        ctx.roundRect(W / 2 - 40, 52 + HUD_TOP, bw, 6, 3);
         ctx.fill();
       }
 
