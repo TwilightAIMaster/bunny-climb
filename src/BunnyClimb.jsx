@@ -717,8 +717,8 @@ export default function BunnyClimb() {
       if (canvas) {
         const rect = canvas.getBoundingClientRect();
         if (rect.height > 0) {
-          const offset = Math.max(sat, 54) * (H / rect.height);
-          hudTopRef.current = offset + 10; // extra padding below safe area
+          const offset = Math.max(sat, 59) * (H / rect.height);
+          hudTopRef.current = offset + 30; // generous padding below Dynamic Island
         }
       }
     };
