@@ -714,9 +714,12 @@ export default function BunnyClimb() {
       const sat = probe.getBoundingClientRect().height;
       document.body.removeChild(probe);
       const canvas = canvasRef.current;
-      if (canvas && sat > 0) {
+      if (canvas) {
         const rect = canvas.getBoundingClientRect();
-        if (rect.height > 0) hudTopRef.current = sat * (H / rect.height);
+        if (rect.height > 0) {
+          const offset = Math.max(sat, 54) * (H / rect.height);
+          hudTopRef.current = offset + 10; // extra padding below safe area
+        }
       }
     };
     const t = setTimeout(measure, 100);
