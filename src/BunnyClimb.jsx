@@ -1663,20 +1663,23 @@ export default function BunnyClimb() {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      width: "100vw",
+      height: "100dvh",
       background: "#0d1117",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
       fontFamily: "'Nunito', sans-serif",
-      padding: 10,
+      padding: 0,
+      margin: 0,
+      overflow: "hidden",
       userSelect: "none",
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
 
       {screen === "play" && (
-        <div style={{ position: "relative", maxWidth: "100%" }}>
+        <div style={{ position: "relative", width: "100vw", height: "100dvh" }}>
           <canvas
             ref={canvasRef}
             width={W}
@@ -1687,10 +1690,9 @@ export default function BunnyClimb() {
             onTouchStart={handlePointerDown}
             onTouchEnd={handlePointerUp}
             style={{
-              borderRadius: 18,
-              boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
+              width: "100vw",
+              height: "100dvh",
               cursor: "pointer",
-              maxWidth: "100%",
               touchAction: "none",
               display: "block",
             }}
