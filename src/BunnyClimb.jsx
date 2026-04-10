@@ -1685,7 +1685,22 @@ export default function BunnyClimb() {
       <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
 
       {screen === "play" && (
-        <div style={{ position: "relative", width: "100vw", height: "100dvh" }}>
+        <div style={{
+          position: "relative",
+          width: "100vw",
+          height: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#0d1117",
+        }}>
+          <div style={{
+            position: "relative",
+            // Maintain 380:640 aspect ratio. On phones (narrower than 9.5:16),
+            // fill the screen. On tablets (wider than 9.5:16), letterbox.
+            width: "min(100vw, calc(100dvh * 380 / 640))",
+            height: "min(100dvh, calc(100vw * 640 / 380))",
+          }}>
           <canvas
             ref={canvasRef}
             width={W}
@@ -1697,8 +1712,8 @@ export default function BunnyClimb() {
             onTouchEnd={handlePointerUp}
             onContextMenu={(e) => e.preventDefault()}
             style={{
-              width: "100vw",
-              height: "100dvh",
+              width: "100%",
+              height: "100%",
               cursor: "pointer",
               touchAction: "none",
               display: "block",
@@ -1811,6 +1826,7 @@ export default function BunnyClimb() {
               </button>
             </div>
           )}
+          </div>
         </div>
       )}
 
