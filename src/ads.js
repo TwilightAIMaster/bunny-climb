@@ -13,10 +13,10 @@
 import { AdMob, BannerAdPosition, BannerAdSize } from "@capacitor-community/admob";
 import { Capacitor } from "@capacitor/core";
 
-// ==== PASTE YOUR REAL ADMOB IDS HERE ====
-const PROD_IOS_APP_ID = "";             // e.g. "ca-app-pub-1234567890123456~1234567890"
-const PROD_IOS_BANNER_ID = "";          // e.g. "ca-app-pub-1234567890123456/1234567890"
-const PROD_IOS_INTERSTITIAL_ID = "";    // e.g. "ca-app-pub-1234567890123456/0987654321"
+// ==== REAL ADMOB IDS ====
+const PROD_IOS_APP_ID = "ca-app-pub-9768361519661229~5909269582";
+const PROD_IOS_BANNER_ID = "ca-app-pub-9768361519661229/9645334615";
+const PROD_IOS_INTERSTITIAL_ID = "ca-app-pub-9768361519661229/9968768242";
 // =========================================
 
 // Google's official test ad unit IDs — safe to use during development.
