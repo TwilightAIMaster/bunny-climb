@@ -40,29 +40,45 @@ let bannerVisible = false;
 const isNative = () => Capacitor.getPlatform() !== "web";
 
 export async function initAds() {
+  console.log("[ads] initAds called, isNative=", isNative(), "initialized=", initialized);
   if (!isNative() || initialized) return;
+
+  // Wait for the app to be fully foregrounded before calling ATT. iOS will
+  // silently reject requestTrackingAuthorization() if the app is not in the
+  // UIApplicationStateActive state, which is common immediately after launch
+  // inside a Capacitor WebView.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   try {
     // Show Apple's App Tracking Transparency prompt on iOS before initializing
     // AdMob. Without this call, the ATT framework is linked but the dialog
     // never appears, which causes automatic App Store rejection.
     try {
-      const { status } = await AdMob.trackingAuthorizationStatus();
-      if (status === "notDetermined") {
-        await AdMob.requestTrackingAuthorization();
+      console.log("[ads] checking ATT status...");
+      const result = await AdMob.trackingAuthorizationStatus();
+      console.log("[ads] ATT status result:", JSON.stringify(result));
+      if (result && result.status === "notDetermined") {
+        console.log("[ads] requesting ATT authorization...");
+        const req = await AdMob.requestTrackingAuthorization();
+        console.log("[ads] ATT request result:", JSON.stringify(req));
+      } else {
+        console.log("[ads] ATT already decided, skipping prompt");
       }
     } catch (e) {
-      console.warn("ATT request failed:", e);
+      console.warn("[ads] ATT request failed:", e && e.message ? e.message : e);
     }
 
+    console.log("[ads] calling AdMob.initialize...");
     await AdMob.initialize({
       initializeForTesting: useTestAds,
       // tagForChildDirectedTreatment / tagForUnderAgeOfConsent default to false.
     });
     initialized = true;
+    console.log("[ads] AdMob initialized successfully");
     // Preload the first interstitial so it's ready for the first Game Over.
     prepareInterstitial();
   } catch (e) {
-    console.warn("AdMob init failed:", e);
+    console.warn("[ads] AdMob init failed:", e && e.message ? e.message : e);
   }
 }
 
