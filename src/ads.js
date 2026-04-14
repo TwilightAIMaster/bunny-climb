@@ -42,6 +42,18 @@ const isNative = () => Capacitor.getPlatform() !== "web";
 export async function initAds() {
   if (!isNative() || initialized) return;
   try {
+    // Show Apple's App Tracking Transparency prompt on iOS before initializing
+    // AdMob. Without this call, the ATT framework is linked but the dialog
+    // never appears, which causes automatic App Store rejection.
+    try {
+      const { status } = await AdMob.trackingAuthorizationStatus();
+      if (status === "notDetermined") {
+        await AdMob.requestTrackingAuthorization();
+      }
+    } catch (e) {
+      console.warn("ATT request failed:", e);
+    }
+
     await AdMob.initialize({
       initializeForTesting: useTestAds,
       // tagForChildDirectedTreatment / tagForUnderAgeOfConsent default to false.
