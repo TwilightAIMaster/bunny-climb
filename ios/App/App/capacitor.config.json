@@ -2,5 +2,19 @@
 	"appId": "com.bunnyclimb.game",
 	"appName": "Bunny Climb",
 	"webDir": "dist",
-	"packageClassList": []
+	"ios": {
+		"contentInset": "always",
+		"allowsLinkPreview": false,
+		"backgroundColor": "#0d1117"
+	},
+	"plugins": {
+		"StatusBar": {
+			"overlaysWebView": true,
+			"style": "LIGHT",
+			"backgroundColor": "#0d1117"
+		}
+	},
+	"packageClassList": [
+		"AdMobPlugin"
+	]
 }
