@@ -1,11 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as Tone from "tone";
-import { initAds, showBanner, hideBanner, showInterstitial } from "./ads";
-import { Capacitor } from "@capacitor/core";
-
-// Reserve space at the bottom of the play area for the AdMob banner on
-// native builds. Web dev build renders without a banner so no padding.
-const AD_BANNER_HEIGHT = Capacitor.getPlatform() === "web" ? 0 : 60;
 
 // ── Sound Effects ──
 const SFX = {
@@ -711,26 +705,6 @@ export default function BunnyClimb() {
   const inputRef = useRef(0); // -1 left, 0 none, 1 right
   // HUD offset in canvas coordinates — just below the status bar line.
   const HUD_TOP = 10;
-
-  // Initialize AdMob once on mount. No-op on web builds.
-  useEffect(() => {
-    initAds();
-  }, []);
-
-  // Show/hide the banner ad based on which screen is active, and fire the
-  // interstitial after the player lands on the Game Over screen.
-  useEffect(() => {
-    if (screen === "play") {
-      showBanner();
-    } else {
-      hideBanner();
-    }
-    if (screen === "over") {
-      // Small delay so the Game Over UI renders first, then the ad pops.
-      const t = setTimeout(() => showInterstitial(), 600);
-      return () => clearTimeout(t);
-    }
-  }, [screen]);
 
   const initGame = useCallback(() => {
     const platforms = [];
@@ -1715,7 +1689,6 @@ export default function BunnyClimb() {
           position: "relative",
           width: "100vw",
           height: "100dvh",
-          paddingBottom: AD_BANNER_HEIGHT,
           boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
@@ -1725,9 +1698,9 @@ export default function BunnyClimb() {
           <div style={{
             position: "relative",
             // Maintain 380:640 aspect ratio. On phones (narrower than 9.5:16),
-            // fill the remaining screen. On tablets (wider), letterbox.
-            width: `min(100vw, calc((100dvh - ${AD_BANNER_HEIGHT}px) * 380 / 640))`,
-            height: `min(calc(100dvh - ${AD_BANNER_HEIGHT}px), calc(100vw * 640 / 380))`,
+            // fill the screen. On tablets (wider), letterbox.
+            width: "min(100vw, calc(100dvh * 380 / 640))",
+            height: "min(100dvh, calc(100vw * 640 / 380))",
           }}>
           <canvas
             ref={canvasRef}
